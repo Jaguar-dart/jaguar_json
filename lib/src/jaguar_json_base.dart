@@ -16,7 +16,8 @@ class WrapEncodeJson<ModelType> extends RouteWrapper<EncodeJson> {
 
   final String typeKey;
 
-  const WrapEncodeJson(this.serializer, {this.id, this.withType, this.typeKey});
+  const WrapEncodeJson(this.serializer,
+      {this.id, this.withType: false, this.typeKey});
 
   EncodeJson<ModelType> createInterceptor() =>
       new EncodeJson<ModelType>(serializer,
@@ -30,7 +31,7 @@ class EncodeJson<ModelType> extends Interceptor {
 
   final String typeKey;
 
-  EncodeJson(this.serializer, {this.withType, this.typeKey});
+  EncodeJson(this.serializer, {this.withType: false, this.typeKey});
 
   @InputRouteResponse()
   Response<String> post(Response<ModelType> incoming) {
@@ -62,7 +63,7 @@ class DecodeJson<ModelType> extends Interceptor {
 
   DecodeJson(this.serializer, {this.encoding: UTF8});
 
-  Future<ModelType> post(Request req) async {
+  Future<dynamic> pre(Request req) async {
     String data = await req.bodyAsText(encoding);
     if (data.isNotEmpty) {
       return serializer.fromMap(JSON.decode(data));
@@ -81,7 +82,8 @@ class WrapEncodeJsonRepo extends RouteWrapper<EncodeJsonRepo> {
 
   final String typeKey;
 
-  const WrapEncodeJsonRepo(this.repo, {this.id, this.withType, this.typeKey});
+  const WrapEncodeJsonRepo(this.repo,
+      {this.id, this.withType: false, this.typeKey});
 
   EncodeJsonRepo createInterceptor() =>
       new EncodeJsonRepo(repo, withType: withType, typeKey: this.typeKey);
@@ -94,12 +96,13 @@ class EncodeJsonRepo extends Interceptor {
 
   final String typeKey;
 
-  EncodeJsonRepo(this.repo, {this.withType, this.typeKey});
+  EncodeJsonRepo(this.repo, {this.withType: false, this.typeKey});
 
   @InputRouteResponse()
   Response<String> post(Response<dynamic> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value = repo.serialize(incoming.value, withType: withType, typeKey: typeKey);
+    resp.value =
+        repo.serialize(incoming.value, withType: withType, typeKey: typeKey);
     resp.headers.mimeType = ContentType.JSON.mimeType;
     return resp;
   }
@@ -112,15 +115,13 @@ class WrapDecodeJsonRepo extends RouteWrapper<DecodeJsonRepo> {
 
   final Encoding encoding;
 
-  final bool withType;
-
   final String typeKey;
 
   const WrapDecodeJsonRepo(this.repo,
-      {this.id, this.encoding: UTF8, this.withType, this.typeKey});
+      {this.id, this.encoding: UTF8, this.typeKey});
 
-  DecodeJsonRepo createInterceptor() => new DecodeJsonRepo(repo,
-      encoding: encoding, withType: withType, typeKey: this.typeKey);
+  DecodeJsonRepo createInterceptor() =>
+      new DecodeJsonRepo(repo, encoding: encoding, typeKey: this.typeKey);
 }
 
 class DecodeJsonRepo extends Interceptor {
@@ -128,16 +129,15 @@ class DecodeJsonRepo extends Interceptor {
 
   final Encoding encoding;
 
-  final bool withType;
-
   final String typeKey;
 
-  DecodeJsonRepo(this.repo, {this.encoding: UTF8, this.withType, this.typeKey});
+  DecodeJsonRepo(this.repo,
+      {this.encoding: UTF8, this.typeKey});
 
-  Future<dynamic> post(Request req) async {
+  Future<dynamic> pre(Request req) async {
     String data = await req.bodyAsText(encoding);
     if (data.isNotEmpty) {
-      return repo.deserialize(data, withType: withType, typeKey: typeKey);
+      return repo.deserialize(data, typeKey: typeKey);
     }
 
     return null;
