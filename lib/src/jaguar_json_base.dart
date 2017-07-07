@@ -7,53 +7,24 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 
-class WrapEncodeJson<ModelType> extends RouteWrapper<EncodeJson> {
-  final String id;
-
+class EncodeJson<ModelType> extends Interceptor<Null, String, ModelType> {
   final Serializer<ModelType> serializer;
 
   final bool withType;
 
   final String typeKey;
 
-  const WrapEncodeJson(this.serializer,
-      {this.id, this.withType: false, this.typeKey});
+  const EncodeJson(this.serializer, {this.withType: false, this.typeKey});
 
-  EncodeJson<ModelType> createInterceptor() =>
-      new EncodeJson<ModelType>(serializer,
-          withType: withType, typeKey: this.typeKey);
-}
+  Null pre(_) => null;
 
-class EncodeJson<ModelType> extends Interceptor {
-  final Serializer<ModelType> serializer;
-
-  final bool withType;
-
-  final String typeKey;
-
-  EncodeJson(this.serializer, {this.withType: false, this.typeKey});
-
-  @InputRouteResponse()
-  Response<String> post(Response<ModelType> incoming) {
+  Response<String> post(Context ctx, Response<ModelType> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
     resp.value = JSON.encode(
         serializer.toMap(incoming.value, withType: withType, typeKey: typeKey));
     resp.headers.mimeType = ContentType.JSON.mimeType;
     return resp;
   }
-}
-
-class WrapDecodeJson<ModelType> extends RouteWrapper<DecodeJson> {
-  final String id;
-
-  final Serializer<ModelType> serializer;
-
-  final Encoding encoding;
-
-  const WrapDecodeJson(this.serializer, {this.id, this.encoding: UTF8});
-
-  DecodeJson<ModelType> createInterceptor() =>
-      new DecodeJson<ModelType>(serializer, encoding: encoding);
 }
 
 class DecodeJson<ModelType> extends Interceptor {
@@ -63,30 +34,14 @@ class DecodeJson<ModelType> extends Interceptor {
 
   DecodeJson(this.serializer, {this.encoding: UTF8});
 
-  Future<dynamic> pre(Request req) async {
-    String data = await req.bodyAsText(encoding);
+  Future<dynamic> pre(Context ctx) async {
+    String data = await ctx.req.bodyAsText(encoding);
     if (data.isNotEmpty) {
       return serializer.fromMap(JSON.decode(data));
     }
 
     return null;
   }
-}
-
-class WrapEncodeJsonRepo extends RouteWrapper<EncodeJsonRepo> {
-  final String id;
-
-  final JsonRepo repo;
-
-  final bool withType;
-
-  final String typeKey;
-
-  const WrapEncodeJsonRepo(this.repo,
-      {this.id, this.withType: false, this.typeKey});
-
-  EncodeJsonRepo createInterceptor() =>
-      new EncodeJsonRepo(repo, withType: withType, typeKey: this.typeKey);
 }
 
 class EncodeJsonRepo extends Interceptor {
@@ -98,30 +53,15 @@ class EncodeJsonRepo extends Interceptor {
 
   EncodeJsonRepo(this.repo, {this.withType: false, this.typeKey});
 
-  @InputRouteResponse()
-  Response<String> post(Response<dynamic> incoming) {
+  Null pre(_) => null;
+
+  Response<String> post(Context ctx, Response<dynamic> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
     resp.value =
         repo.serialize(incoming.value, withType: withType, typeKey: typeKey);
     resp.headers.mimeType = ContentType.JSON.mimeType;
     return resp;
   }
-}
-
-class WrapDecodeJsonRepo extends RouteWrapper<DecodeJsonRepo> {
-  final String id;
-
-  final JsonRepo repo;
-
-  final Encoding encoding;
-
-  final String typeKey;
-
-  const WrapDecodeJsonRepo(this.repo,
-      {this.id, this.encoding: UTF8, this.typeKey});
-
-  DecodeJsonRepo createInterceptor() =>
-      new DecodeJsonRepo(repo, encoding: encoding, typeKey: this.typeKey);
 }
 
 class DecodeJsonRepo extends Interceptor {
@@ -134,8 +74,8 @@ class DecodeJsonRepo extends Interceptor {
   DecodeJsonRepo(this.repo,
       {this.encoding: UTF8, this.typeKey});
 
-  Future<dynamic> pre(Request req) async {
-    String data = await req.bodyAsText(encoding);
+  Future<dynamic> pre(Context ctx) async {
+    String data = await ctx.req.bodyAsText(encoding);
     if (data.isNotEmpty) {
       return repo.deserialize(data, typeKey: typeKey);
     }

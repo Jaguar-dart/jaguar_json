@@ -4,6 +4,4 @@
 import 'package:jaguar_json/jaguar_json.dart';
 
 main() {
-  var awesome = new Awesome();
-  print('awesome: ${awesome.isAwesome}');
 }

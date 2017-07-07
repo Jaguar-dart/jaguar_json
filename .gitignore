@@ -1,4 +1,5 @@
 # Files and directories created by pub
+.idea
 .packages
 .pub/
 build/
@@ -7,3 +8,4 @@ pubspec.lock
 
 # Directory created by dartdoc
 doc/api/
+*.iml
