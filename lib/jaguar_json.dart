@@ -6,6 +6,4 @@
 /// More dartdocs go here.
 library jaguar_json;
 
-export 'src/jaguar_json_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/jaguar_json.dart';
