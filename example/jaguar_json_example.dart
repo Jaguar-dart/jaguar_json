@@ -3,5 +3,4 @@
 
 import 'package:jaguar_json/jaguar_json.dart';
 
-main() {
-}
+main() {}

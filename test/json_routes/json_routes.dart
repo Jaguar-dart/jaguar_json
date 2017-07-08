@@ -1,50 +1,48 @@
+import 'dart:async';
 import 'package:test/test.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:jaguar/jaguar.dart';
 import 'package:jaguar_reflect/jaguar_reflect.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
 import 'package:teja_http_json/teja_http_json.dart';
+import 'package:jaguar_serializer/serializer.dart';
 
 import '../../example/models/models.dart';
 
+import '../../example/models/models.dart' as models;
+
 @Api(path: '/api/book')
-class BookRoutes {
-  json.CodecRepo codec(_) => new json.CodecRepo(repo);
+class BookRoutes extends Object with json.JsonRoutes {
+  JsonRepo get repo => models.repo;
 
   @Get()
-  @WrapOne(#codec)
-  Book get(Context ctx) => new Book.fromNum(5);
+  Response<String> get(Context ctx) => toJson(new Book.fromNum(5));
 
   @Post()
-  @WrapOne(#codec)
-  Book post(Context ctx) {
-    final book = ctx.getInput<Book>(json.CodecRepo);
-    print(book);
-    return book;
-  }
+  Future<Response<String>> post(Context ctx) async =>
+      toJson(await fromJson(ctx));
 }
 
 @Api(path: '/api/person')
-class PersonRoutes {
-  json.CodecRepo codec(_) => new json.CodecRepo(repo);
+class PersonRoutes extends Object with json.JsonRoutes {
+  JsonRepo get repo => models.repo;
 
   @Get()
-  @WrapOne(#codec)
-  Person get(Context ctx) => new Person.fromNum(5);
+  Response<String> get(Context ctx) => toJson(new Person.fromNum(5));
 
   @Post()
-  @WrapOne(#codec)
-  Person post(Context ctx) => ctx.getInput<Person>(json.CodecRepo);
+  Future<Response<String>> post(Context ctx) async =>
+      toJson(await fromJson(ctx));
 }
 
 const String url = 'http://localhost:9080';
 
 main() {
-  group('CodecRepo tests', () {
+  group('Codec tests', () {
     final Jaguar server = new Jaguar(port: 9080);
-    final j = new JsonClient(new Client(), repo: repo);
+    final j = new JsonClient(new http.Client(), repo: repo);
 
     setUpAll(() async {
       server.addApi(reflectJaguar(new BookRoutes()));

@@ -62,18 +62,14 @@ class CodecRepo extends Interceptor {
 class Encode<ModelType> extends Interceptor<Null, String, ModelType> {
   final Serializer<ModelType> serializer;
 
-  final bool withType;
-
-  final String typeKey;
-
-  const Encode(this.serializer, {this.withType: false, this.typeKey});
+  const Encode(this.serializer);
 
   Null pre(_) => null;
 
   Response<String> post(Context ctx, Response<ModelType> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value = JSON.encode(
-        serializer.toMap(incoming.value, withType: withType, typeKey: typeKey));
+    resp.value =
+        JSON.encode(serializer.serialize(incoming.value, withType: true));
     resp.headers.mimeType = ContentType.JSON.mimeType;
     return resp;
   }
@@ -89,7 +85,7 @@ class Decode<ModelType> extends Interceptor {
   Future<dynamic> pre(Context ctx) async {
     String data = await ctx.req.bodyAsText(encoding);
     if (data.isNotEmpty) {
-      return serializer.fromMap(JSON.decode(data));
+      return serializer.deserialize(JSON.decode(data));
     }
 
     return null;
@@ -99,18 +95,13 @@ class Decode<ModelType> extends Interceptor {
 class EncodeRepo extends Interceptor {
   final JsonRepo repo;
 
-  final bool withType;
-
-  final String typeKey;
-
-  EncodeRepo(this.repo, {this.withType: false, this.typeKey});
+  EncodeRepo(this.repo);
 
   Null pre(_) => null;
 
   Response<String> post(Context ctx, Response<dynamic> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value =
-        repo.serialize(incoming.value, withType: withType, typeKey: typeKey);
+    resp.value = repo.serialize(incoming.value, withType: true);
     resp.headers.mimeType = ContentType.JSON.mimeType;
     return resp;
   }
@@ -121,27 +112,42 @@ class DecodeRepo extends Interceptor {
 
   final Encoding encoding;
 
-  final String typeKey;
-
-  DecodeRepo(this.repo, {this.encoding: UTF8, this.typeKey});
+  DecodeRepo(this.repo, {this.encoding: UTF8});
 
   Future<dynamic> pre(Context ctx) async {
     String data = await ctx.req.bodyAsText(encoding);
     if (data.isNotEmpty) {
-      return repo.deserialize(data, typeKey: typeKey);
+      return repo.deserialize(data);
     }
 
     return null;
   }
 }
 
-Future<T> deserialize<T>(Serializer<T> serializer, Context ctx) async {
+Future<dynamic> deserialize<T>(Serializer<T> serializer, Context ctx) async {
   final body = await ctx.req.bodyAsJson();
   return serializer.deserialize(body);
 }
 
 Response<String> serialize<T>(Serializer<T> serializer, object,
-    {int statusCode: 200, Map<String, dynamic> headers: const {}}) {
-  return new Response(serializer.serialize(object, withType: true),
-      statusCode: statusCode, headers: headers);
+        {int statusCode: 200, Map<String, dynamic> headers: const {}}) =>
+    Response.json(serializer.serialize(object, withType: true),
+        statusCode: statusCode, headers: headers);
+
+abstract class JsonRoutes {
+  JsonRepo get repo;
+
+  Future<dynamic> fromJson(Context ctx) async {
+    final body = await ctx.req.bodyAsText(UTF8);
+    return repo.deserialize(body);
+  }
+
+  Response<String> toJson<T>(object,
+      {int statusCode: 200, Map<String, dynamic> headers: const {}}) {
+    final resp = new Response(repo.serialize(object, withType: true),
+        statusCode: statusCode, headers: headers);
+    resp.headers.mimeType = resp.headers.mimeType = ContentType.JSON.mimeType;
+    resp.headers.charset = 'utf-8';
+    return resp;
+  }
 }

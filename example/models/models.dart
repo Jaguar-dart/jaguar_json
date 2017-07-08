@@ -66,8 +66,6 @@ class Book {
   String toString() {
     return 'Book(id: $id, author: $author, name: $name, price: $price);';
   }
-
-
 }
 
 @GenSerializer()
