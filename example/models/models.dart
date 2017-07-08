@@ -28,6 +28,10 @@ class Person {
       return false;
     }
   }
+
+  String toString() {
+    return "Person(id: $id, username: $username, email: $email);";
+  }
 }
 
 class Book {
@@ -57,6 +61,13 @@ class Book {
       return false;
     }
   }
+
+  @override
+  String toString() {
+    return 'Book(id: $id, author: $author, name: $name, price: $price);';
+  }
+
+
 }
 
 @GenSerializer()

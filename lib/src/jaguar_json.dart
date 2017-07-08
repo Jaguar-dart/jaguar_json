@@ -8,7 +8,8 @@ import 'dart:convert';
 import 'dart:async';
 
 /// Interceptor to encode and decode JSON
-class Codec<BodyType, RespType> extends Interceptor<BodyType, String, RespType> {
+class Codec<BodyType, RespType>
+    extends Interceptor<BodyType, String, RespType> {
   final Serializer<BodyType> bodySerializer;
 
   final Serializer<RespType> respSerializer;
@@ -46,17 +47,13 @@ class CodecRepo extends Interceptor {
 
   Future<dynamic> pre(Context ctx) async {
     final data = await ctx.req.bodyAsText(bodyEncoding);
-    if (data.isNotEmpty) {
-      return bodySerializer.fromMap(JSON.decode(data));
-    }
-
+    if (data.isNotEmpty) return repo.deserialize(data);
     return null;
   }
 
   Response<String> post(Context ctx, Response incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value =
-        JSON.encode(respSerializer.toMap(incoming.value, withType: true));
+    resp.value = repo.serialize(incoming.value, withType: true);
     resp.headers.mimeType = ContentType.JSON.mimeType;
     return resp;
   }
@@ -136,4 +133,15 @@ class DecodeRepo extends Interceptor {
 
     return null;
   }
+}
+
+Future<T> deserialize<T>(Serializer<T> serializer, Context ctx) async {
+  final body = await ctx.req.bodyAsJson();
+  return serializer.deserialize(body);
+}
+
+Response<String> serialize<T>(Serializer<T> serializer, object,
+    {int statusCode: 200, Map<String, dynamic> headers: const {}}) {
+  return new Response(serializer.serialize(object, withType: true),
+      statusCode: statusCode, headers: headers);
 }

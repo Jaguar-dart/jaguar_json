@@ -11,7 +11,7 @@ import '../../example/models/models.dart';
 
 @Api(path: '/api/book')
 class BookRoutes {
-  json.Codec codec(_) => new json.Codec(bookSerializer, bookSerializer);
+  json.CodecRepo codec(_) => new json.CodecRepo(repo);
 
   @Get()
   @WrapOne(#codec)
@@ -19,12 +19,16 @@ class BookRoutes {
 
   @Post()
   @WrapOne(#codec)
-  Book post(Context ctx) => ctx.getInput<Book>(json.Codec);
+  Book post(Context ctx) {
+    final book = ctx.getInput<Book>(json.CodecRepo);
+    print(book);
+    return book;
+  }
 }
 
 @Api(path: '/api/person')
 class PersonRoutes {
-  json.Codec codec(_) => new json.Codec(personSerializer, personSerializer);
+  json.CodecRepo codec(_) => new json.CodecRepo(repo);
 
   @Get()
   @WrapOne(#codec)
@@ -32,13 +36,13 @@ class PersonRoutes {
 
   @Post()
   @WrapOne(#codec)
-  Person post(Context ctx) => ctx.getInput<Person>(json.Codec);
+  Person post(Context ctx) => ctx.getInput<Person>(json.CodecRepo);
 }
 
 const String url = 'http://localhost:9080';
 
 main() {
-  group('Codec tests', () {
+  group('CodecRepo tests', () {
     final Jaguar server = new Jaguar(port: 9080);
     final j = new JsonClient(new Client(), repo: repo);
 
@@ -56,7 +60,7 @@ main() {
       {
         final book1 = new Book.fromNum(1);
         final JsonResponse resp1 =
-            await j.post(url + '/api/book', body: book1, serialize: true);
+        await j.post(url + '/api/book', body: book1, serialize: true);
         expect(resp1.deserialize(), book1);
         expect(resp1.inner.headers['content-type'],
             'application/json; charset=utf-8');
@@ -65,7 +69,7 @@ main() {
       {
         final person1 = new Person.fromNum(1);
         final JsonResponse resp1 =
-            await j.post(url + '/api/person', body: person1, serialize: true);
+        await j.post(url + '/api/person', body: person1, serialize: true);
         expect(resp1.deserialize(), person1);
       }
     });
