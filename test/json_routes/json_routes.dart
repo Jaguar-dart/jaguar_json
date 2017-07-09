@@ -23,6 +23,10 @@ class BookRoutes extends Object with json.JsonRoutes {
   @Post()
   Future<Response<String>> post(Context ctx) async =>
       toJson(await fromJson(ctx));
+
+  @Post(path: '/map')
+  Future<Response<String>> map(Context ctx) async =>
+      toJson(await fromJson(ctx));
 }
 
 @Api(path: '/api/person')
@@ -85,6 +89,40 @@ main() {
         final person5 = new Person.fromNum(5);
         final JsonResponse resp1 = await j.get(url + '/api/person');
         expect(resp1.deserialize(), person5);
+      }
+    });
+
+    test('Raw Map', () async {
+      {
+        final body = <String, dynamic>{
+          "field1": "string",
+          "field2": 5,
+          "@t": "Map",
+        };
+        final JsonResponse resp1 = await j.post(url + '/api/book', body: body);
+        expect(resp1.deserialize(), {"field1": "string", "field2": 5});
+        expect(resp1.inner.headers['content-type'],
+            'application/json; charset=utf-8');
+      }
+    });
+
+    test('Raw int', () async {
+      {
+        final body = 5;
+        final JsonResponse resp1 = await j.post(url + '/api/book', body: body);
+        expect(resp1.deserialize(), 5);
+        expect(resp1.inner.headers['content-type'],
+            'application/json; charset=utf-8');
+      }
+    });
+
+    test('Raw String', () async {
+      {
+        final body = 'hello';
+        final JsonResponse resp1 = await j.post(url + '/api/book', body: body);
+        expect(resp1.deserialize(), 'hello');
+        expect(resp1.inner.headers['content-type'],
+            'application/json; charset=utf-8');
       }
     });
   });

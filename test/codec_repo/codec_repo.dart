@@ -21,7 +21,6 @@ class BookRoutes {
   @WrapOne(#codec)
   Book post(Context ctx) {
     final book = ctx.getInput<Book>(json.CodecRepo);
-    print(book);
     return book;
   }
 }

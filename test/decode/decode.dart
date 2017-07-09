@@ -17,11 +17,14 @@ class BookRoutes {
 
   @Post()
   @Wrap(const [#decoder, #encoder])
-  Book get(Context ctx) => ctx.getInput(json.Decode);
+  Book one(Context ctx) {
+    final Book book = ctx.getInput(json.Decode);
+    return book;
+  }
 
   @Post(path: '/many')
   @Wrap(const [#decoder, #encoder])
-  List<Book> getList(Context ctx) => ctx.getInput(json.Decode);
+  List<Book> list(Context ctx) => ctx.getInput(json.Decode);
 }
 
 @Api(path: '/api/person')
@@ -32,11 +35,11 @@ class PersonRoutes {
 
   @Post()
   @Wrap(const [#decoder, #encoder])
-  Person get(Context ctx) => ctx.getInput(json.Decode);
+  Person one(Context ctx) => ctx.getInput(json.Decode);
 
   @Post(path: '/many')
   @Wrap(const [#decoder, #encoder])
-  List<Person> getList(Context ctx) => ctx.getInput(json.Decode);
+  List<Person> list(Context ctx) => ctx.getInput(json.Decode);
 }
 
 const String url = 'http://localhost:9080';
