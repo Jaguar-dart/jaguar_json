@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Jaguar 0.6.x
+
 ## 0.1.0
 
 - Jaguar 0.5.x
