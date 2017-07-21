@@ -137,14 +137,16 @@ Response<String> serialize<T>(Serializer<T> serializer, object,
 abstract class JsonRoutes {
   JsonRepo get repo;
 
-  Future<dynamic> fromJson(Context ctx) async {
+  Future<dynamic> fromJson(Context ctx, {Type type}) async {
     final body = await ctx.req.bodyAsText(UTF8);
-    return repo.deserialize(body);
+    return repo.deserialize(body, type: type);
   }
 
   Response<String> toJson<T>(object,
-      {int statusCode: 200, Map<String, dynamic> headers: const {}}) {
-    final resp = new Response(repo.serialize(object, withType: true),
+      {int statusCode: 200,
+      Map<String, dynamic> headers: const {},
+      bool withType: true}) {
+    final resp = new Response(repo.serialize(object, withType: withType),
         statusCode: statusCode, headers: headers);
     resp.headers.mimeType = resp.headers.mimeType = ContentType.JSON.mimeType;
     resp.headers.charset = 'utf-8';
