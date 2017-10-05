@@ -4,7 +4,7 @@ import 'package:http/http.dart';
 import 'package:jaguar/jaguar.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
-import 'package:teja_http_json/teja_http_json.dart';
+import 'package:jaguar_client/jaguar_client.dart';
 
 import '../../example/models/models.dart';
 
@@ -58,8 +58,7 @@ main() {
     test('Decode', () async {
       {
         final book5 = new Book.fromNum(5);
-        final JsonResponse resp1 =
-            await j.post(url + '/api/book', body: book5, serialize: true);
+        final JsonResponse resp1 = await j.post(url + '/api/book', body: book5);
         expect(resp1.deserialize(), book5);
         expect(resp1.inner.headers['content-type'],
             'application/json; charset=utf-8');
@@ -68,7 +67,7 @@ main() {
       {
         final person5 = new Person.fromNum(5);
         final JsonResponse resp1 =
-            await j.post(url + '/api/person', body: person5, serialize: true);
+            await j.post(url + '/api/person', body: person5);
         expect(resp1.deserialize(), person5);
       }
     });
@@ -78,7 +77,7 @@ main() {
         final books =
             new List<Book>.generate(5, (int i) => new Book.fromNum(i));
         final JsonResponse resp1 =
-            await j.post(url + '/api/book/many', body: books, serialize: true);
+            await j.post(url + '/api/book/many', body: books);
         expect(resp1.deserialize(), books);
         expect(resp1.inner.headers['content-type'],
             'application/json; charset=utf-8');
@@ -87,8 +86,8 @@ main() {
       {
         final persons =
             new List<Person>.generate(5, (int i) => new Person.fromNum(i));
-        final JsonResponse resp1 = await j.post(url + '/api/person/many',
-            body: persons, serialize: true);
+        final JsonResponse resp1 =
+            await j.post(url + '/api/person/many', body: persons);
         expect(resp1.deserialize(), persons);
       }
     });

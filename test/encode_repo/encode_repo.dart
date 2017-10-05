@@ -4,7 +4,7 @@ import 'package:http/http.dart';
 import 'package:jaguar/jaguar.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
-import 'package:teja_http_json/teja_http_json.dart';
+import 'package:jaguar_client/jaguar_client.dart';
 
 import '../../example/models/models.dart';
 

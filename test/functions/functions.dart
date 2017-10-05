@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:jaguar/jaguar.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
-import 'package:teja_http_json/teja_http_json.dart';
+import 'package:jaguar_client/jaguar_client.dart';
 
 import '../../example/models/models.dart';
 
@@ -52,7 +52,7 @@ main() {
       {
         final book1 = new Book.fromNum(1);
         final JsonResponse resp1 =
-            await j.post(url + '/api/book', body: book1, serialize: true);
+            await j.post(url + '/api/book', body: book1);
         expect(resp1.deserialize(), book1);
         expect(resp1.inner.headers['content-type'],
             'application/json; charset=utf-8');
@@ -61,7 +61,7 @@ main() {
       {
         final person1 = new Person.fromNum(1);
         final JsonResponse resp1 =
-            await j.post(url + '/api/person', body: person1, serialize: true);
+            await j.post(url + '/api/person', body: person1);
         expect(resp1.deserialize(), person1);
       }
     });
