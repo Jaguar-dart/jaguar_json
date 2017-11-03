@@ -1,147 +1,94 @@
 // Copyright (c) 2017, teja. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
+library jaguar.json;
+
 import 'package:jaguar/jaguar.dart';
 import 'package:jaguar_serializer/jaguar_serializer.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 
-/// Interceptor to encode and decode JSON
-class Codec<BodyType, RespType>
-    extends Interceptor<BodyType, String, RespType> {
-  final Serializer<BodyType> bodySerializer;
+part 'interceptor_repo.dart';
+part 'interceptor_serializer.dart';
 
-  final Serializer<RespType> respSerializer;
-
-  final Encoding bodyEncoding;
-
-  const Codec(this.bodySerializer, this.respSerializer,
-      {this.bodyEncoding: UTF8});
-
-  Future<BodyType> pre(Context ctx) async {
-    String data = await ctx.req.bodyAsText(bodyEncoding);
-    if (data.isNotEmpty) {
-      return bodySerializer.fromMap(JSON.decode(data));
-    }
-
-    return null;
-  }
-
-  Response<String> post(Context ctx, Response<RespType> incoming) {
-    Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value =
-        JSON.encode(respSerializer.toMap(incoming.value, withType: true));
-    resp.headers.mimeType = ContentType.JSON.mimeType;
-    return resp;
-  }
-}
-
-/// Interceptor to encode and decode JSlON
-class CodecRepo extends Interceptor {
-  final Encoding bodyEncoding;
-
-  final SerializerRepo repo;
-
-  const CodecRepo(this.repo, {this.bodyEncoding: UTF8});
-
-  Future<dynamic> pre(Context ctx) async {
-    final data = await ctx.req.bodyAsText(bodyEncoding);
-    if (data.isNotEmpty) return repo.deserialize(data);
-    return null;
-  }
-
-  Response<String> post(Context ctx, Response incoming) {
-    Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value = repo.serialize(incoming.value, withType: true);
-    resp.headers.mimeType = ContentType.JSON.mimeType;
-    return resp;
-  }
-}
-
-class Encode<ModelType> extends Interceptor<Null, String, ModelType> {
-  final Serializer<ModelType> serializer;
-
-  const Encode(this.serializer);
-
-  Null pre(_) => null;
-
-  Response<String> post(Context ctx, Response<ModelType> incoming) {
-    Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value =
-        JSON.encode(serializer.serialize(incoming.value, withType: true));
-    resp.headers.mimeType = ContentType.JSON.mimeType;
-    return resp;
-  }
-}
-
-class Decode<ModelType> extends Interceptor {
-  final Serializer<ModelType> serializer;
-
-  final Encoding encoding;
-
-  Decode(this.serializer, {this.encoding: UTF8});
-
-  Future<dynamic> pre(Context ctx) async {
-    String data = await ctx.req.bodyAsText(encoding);
-    if (data.isNotEmpty) {
-      return serializer.deserialize(JSON.decode(data));
-    }
-
-    return null;
-  }
-}
-
-class EncodeRepo extends Interceptor {
-  final JsonRepo repo;
-
-  EncodeRepo(this.repo);
-
-  Null pre(_) => null;
-
-  Response<String> post(Context ctx, Response<dynamic> incoming) {
-    Response<String> resp = new Response<String>.cloneExceptValue(incoming);
-    resp.value = repo.serialize(incoming.value, withType: true);
-    resp.headers.mimeType = ContentType.JSON.mimeType;
-    return resp;
-  }
-}
-
-class DecodeRepo extends Interceptor {
-  final JsonRepo repo;
-
-  final Encoding encoding;
-
-  DecodeRepo(this.repo, {this.encoding: UTF8});
-
-  Future<dynamic> pre(Context ctx) async {
-    String data = await ctx.req.bodyAsText(encoding);
-    if (data.isNotEmpty) {
-      return repo.deserialize(data);
-    }
-
-    return null;
-  }
-}
-
+/// Uses [serializer] to deserialize JSON HTTP body from [ctx]. Returns the
+/// deserialized object.
+///
+///     @Api(path: '/api/book')
+///     class BookRoutes {
+///       @Post()
+///       Future<Response<String>> post(Context ctx) async => json.serialize(
+///         bookSerializer, await json.deserialize(bookSerializer, ctx));
+///     }
 Future<dynamic> deserialize<T>(Serializer<T> serializer, Context ctx) async {
   final body = await ctx.req.bodyAsJson();
   return serializer.deserialize(body);
 }
 
+/// Uses [serializer] to serialize [object] to JSON. Returns [Response] object
+/// with serialized JSON body.
+///
+///     @Api(path: '/api/book')
+///     class BookRoutes {
+///       @Get()
+///       Response<String> get(Context ctx) =>
+///         json.serialize(bookSerializer, new Book.fromNum(5));
+///     }
 Response<String> serialize<T>(Serializer<T> serializer, object,
         {int statusCode: 200, Map<String, dynamic> headers: const {}}) =>
     Response.json(serializer.serialize(object, withType: true),
         statusCode: statusCode, headers: headers);
 
+/// A mixin for [RequestHandler]s to make encoding and decoding to JSON easy.
+///
+/// Use [fromJson] to obtain deserialized Dart object from JSON HTTP body with a
+/// single call.
+///
+/// Use [toJSON] to compose a [Response] object with serialized JSON body.
+///
+/// It uses [repo] to deserialize and serialize JSON.
+///
+///     @Api(path: '/api/book')
+///     class BookRoutes extends Object with JsonRoutes {
+///       JsonRepo get repo => models.repo;
+///
+///       @Get()
+///       Response<String> get(Context ctx) => toJson(new Book.fromNum(5));
+///
+///       @Post()
+///       Future<Response<String>> post(Context ctx) async =>
+///         toJson(await fromJson(ctx));
+///     }
 abstract class JsonRoutes {
   JsonRepo get repo;
 
+  /// Uses [repo] to deserialize JSON HTTP body from [ctx]. Returns the
+  /// deserialized object.
+  ///
+  ///     @Api(path: '/api/book')
+  ///     class BookRoutes extends Object with JsonRoutes {
+  ///       JsonRepo get repo => models.repo;
+  ///
+  ///       @Post()
+  ///       Future<Response<String>> post(Context ctx) async =>
+  ///         toJson(await fromJson(ctx));
+  ///     }
   Future<dynamic> fromJson(Context ctx, {Type type}) async {
     final body = await ctx.req.bodyAsText(UTF8);
     return repo.deserialize(body, type: type);
   }
 
+  /// Uses [repo] to serialize [object] to JSON. Returns [Response] object with
+  /// serialized JSON body.
+  ///
+  ///     @Api(path: '/api/book')
+  ///     class BookRoutes extends Object with JsonRoutes {
+  ///       JsonRepo get repo => models.repo;
+  ///
+  ///       @Get()
+  ///       Response<String> get(Context ctx) => toJson(new Book.fromNum(5));
+  ///     }
   Response<String> toJson<T>(object,
       {int statusCode: 200,
       Map<String, dynamic> headers: const {},
