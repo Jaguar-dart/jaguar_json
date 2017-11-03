@@ -1,6 +1,23 @@
 // Copyright (c) 2017, teja. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
+/// Provides [Interceptor]s, utility functions and mixins to make JSON encoding
+/// and decoding from/to HTTP requests/responses easier.
+///
+/// [Interceptors]:
+/// 1. [Codec]
+/// 2. [Encode]
+/// 3. [Decode]
+/// 4. [CodecRepo]
+/// 5. [EncodeRepo]
+/// 6. [DecodeRepo]
+///
+/// Mixins:
+/// 1. [JsonRoutes]
+///
+/// Utility functions:
+/// 1. [deserialize]
+/// 2. [serialize]
 library jaguar.json;
 
 import 'package:jaguar/jaguar.dart';
@@ -61,6 +78,7 @@ Response<String> serialize<T>(Serializer<T> serializer, object,
 ///         toJson(await fromJson(ctx));
 ///     }
 abstract class JsonRoutes {
+  /// Repository used to decode and encode JSON
   JsonRepo get repo;
 
   /// Uses [repo] to deserialize JSON HTTP body from [ctx]. Returns the

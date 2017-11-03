@@ -51,8 +51,7 @@ main() {
     test('Decoding', () async {
       {
         final book1 = new Book.fromNum(1);
-        final JsonResponse resp1 =
-            await j.post(url + '/api/book', body: book1);
+        final JsonResponse resp1 = await j.post(url + '/api/book', body: book1);
         expect(resp1.deserialize(), book1);
         expect(resp1.inner.headers['content-type'],
             'application/json; charset=utf-8');
