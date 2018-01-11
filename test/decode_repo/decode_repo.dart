@@ -1,12 +1,17 @@
 import 'package:test/test.dart';
 import 'package:http/http.dart';
 
+import 'package:jaguar_serializer/jaguar_serializer.dart';
 import 'package:jaguar/jaguar.dart';
+import 'package:jaguar_reflect/jaguar_reflect.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
 import 'package:jaguar_client/jaguar_client.dart';
 
 import '../../example/models/models.dart';
+
+final JsonRepo repo = new JsonRepo(
+    serializers: [personSerializer, bookSerializer], withType: true);
 
 @Api(path: '/api/book')
 class BookRoutes {
@@ -16,11 +21,11 @@ class BookRoutes {
 
   @Post()
   @Wrap(const [#decoder, #encoder])
-  Book get(Context ctx) => ctx.getInput(json.DecodeRepo);
+  Book get(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 
   @Post(path: '/many')
   @Wrap(const [#decoder, #encoder])
-  List<Book> getList(Context ctx) => ctx.getInput(json.DecodeRepo);
+  List<Book> getList(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 }
 
 @Api(path: '/api/person')
@@ -31,11 +36,12 @@ class PersonRoutes {
 
   @Post()
   @Wrap(const [#decoder, #encoder])
-  Person get(Context ctx) => ctx.getInput(json.DecodeRepo);
+  Person get(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 
   @Post(path: '/many')
   @Wrap(const [#decoder, #encoder])
-  List<Person> getList(Context ctx) => ctx.getInput(json.DecodeRepo);
+  List<Person> getList(Context ctx) =>
+      ctx.getInterceptorResult(json.DecodeRepo);
 }
 
 const String url = 'http://localhost:9080';
@@ -46,8 +52,8 @@ main() {
     final j = new JsonClient(new Client(), repo: repo);
 
     setUpAll(() async {
-      server.addApiReflected(new BookRoutes());
-      server.addApiReflected(new PersonRoutes());
+      server.addApi(reflect(new BookRoutes()));
+      server.addApi(reflect(new PersonRoutes()));
       await server.serve();
     });
 

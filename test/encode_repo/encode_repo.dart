@@ -2,6 +2,7 @@ import 'package:test/test.dart';
 import 'package:http/http.dart';
 
 import 'package:jaguar/jaguar.dart';
+import 'package:jaguar_reflect/jaguar_reflect.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
 import 'package:jaguar_client/jaguar_client.dart';
@@ -44,8 +45,8 @@ main() {
     final j = new JsonClient(new Client(), repo: repo);
 
     setUpAll(() async {
-      server.addApi(reflectJaguar(new BookRoutes()));
-      server.addApi(reflectJaguar(new PersonRoutes()));
+      server.addApi(reflect(new BookRoutes()));
+      server.addApi(reflect(new PersonRoutes()));
       await server.serve();
     });
 

@@ -15,7 +15,7 @@ part of jaguar.json;
 ///     	@Post()
 ///     	@WrapOne(#codec)
 ///     	Book post(Context ctx) {
-///     		final book = ctx.getInput<Book>(json.CodecRepo);
+///     		final book = ctx.getInterceptorResult<Book>(json.CodecRepo);
 ///     		return book;
 ///     	}
 ///     }
@@ -87,11 +87,11 @@ class EncodeRepo extends Interceptor {
 ///
 ///     	@Post()
 ///     	@Wrap(const [#decoder, #encoder])
-///     	Book get(Context ctx) => ctx.getInput(json.DecodeRepo);
+///     	Book get(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 ///
 ///     	@Post(path: '/many')
 ///     	@Wrap(const [#decoder, #encoder])
-///     	List<Book> getList(Context ctx) => ctx.getInput(json.DecodeRepo);
+///     	List<Book> getList(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 ///     }
 class DecodeRepo extends Interceptor {
   /// Repository used to decode and encode JSON

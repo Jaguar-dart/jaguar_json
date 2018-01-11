@@ -2,15 +2,19 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:jaguar_serializer/jaguar_serializer.dart';
 import 'package:jaguar/jaguar.dart';
+import 'package:jaguar_reflect/jaguar_reflect.dart';
 
 import 'package:jaguar_json/jaguar_json.dart' as json;
 import 'package:jaguar_client/jaguar_client.dart';
-import 'package:jaguar_serializer/jaguar_serializer.dart';
 
 import '../../example/models/models.dart';
 
 import '../../example/models/models.dart' as models;
+
+final JsonRepo repo = new JsonRepo(
+    serializers: [personSerializer, bookSerializer], withType: true);
 
 @Api(path: '/api/book')
 class BookRoutes extends Object with json.JsonRoutes {
@@ -48,8 +52,8 @@ main() {
     final j = new JsonClient(new http.Client(), repo: repo);
 
     setUpAll(() async {
-      server.addApi(reflectJaguar(new BookRoutes()));
-      server.addApi(reflectJaguar(new PersonRoutes()));
+      server.addApi(reflect(new BookRoutes()));
+      server.addApi(reflect(new PersonRoutes()));
       await server.serve();
     });
 

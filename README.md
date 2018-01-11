@@ -20,7 +20,7 @@ deserialize.
 route returns an object of type `ModelType`.
 
 `Decode` automatically de-serializes JSON body in the request to `ModelType`. The de-serialized dart
-object can be obtained in the route method using `ctx.getInput(Decode)`.
+object can be obtained in the route method using `ctx.getInterceptorResult(Decode)`.
 
 ```dart
 @Api(path: '/api/book')
@@ -32,13 +32,13 @@ class BookRoutes {
   @Post()
   @Wrap(const [#decoder, #encoder])
   Book one(Context ctx) {
-    final Book book = ctx.getInput(json.Decode);
+    final Book book = ctx.getInterceptorResult(json.Decode);
     return book;
   }
 
   @Post(path: '/many')
   @Wrap(const [#decoder, #encoder])
-  List<Book> list(Context ctx) => ctx.getInput(json.Decode);
+  List<Book> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 }
 ```
 
@@ -64,7 +64,7 @@ class BookRoutes {
   @Post()
   @WrapOne(#codec)
   Book post(Context ctx) {
-    final book = ctx.getInput<Book>(json.CodecRepo);
+    final book = ctx.getInterceptorResult<Book>(json.CodecRepo);
     return book;
   }
 }

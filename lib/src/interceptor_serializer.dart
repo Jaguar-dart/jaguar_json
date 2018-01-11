@@ -15,7 +15,7 @@ part of jaguar.json;
 ///
 ///     	@Post()
 ///     	@WrapOne(#codec)
-///     	Book post(Context ctx) => ctx.getInput<Book>(json.Codec);
+///     	Book post(Context ctx) => ctx.getInterceptorResult<Book>(json.Codec);
 ///     }
 class Codec<BodyType, RespType>
     extends Interceptor<BodyType, String, RespType> {
@@ -61,13 +61,13 @@ class Codec<BodyType, RespType>
 ///     	@Post()
 ///     	@Wrap(const [#decoder, #encoder])
 ///     	Book one(Context ctx) {
-///     		final Book book = ctx.getInput(json.Decode);
+///     		final Book book = ctx.getInterceptorResult(json.Decode);
 ///     		return book;
 ///     	}
 ///
 ///     	@Post(path: '/many')
 ///     	@Wrap(const [#decoder, #encoder])
-///     	List<Book> list(Context ctx) => ctx.getInput(json.Decode);
+///     	List<Book> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 ///     }
 class Encode<ModelType> extends Interceptor<Null, String, ModelType> {
   /// Serializer used to serialize Dart object to JSON
@@ -98,13 +98,13 @@ class Encode<ModelType> extends Interceptor<Null, String, ModelType> {
 ///     	@Post()
 ///     	@Wrap(const [#decoder, #encoder])
 ///     	Book one(Context ctx) {
-///     		final Book book = ctx.getInput(json.Decode);
+///     		final Book book = ctx.getInterceptorResult(json.Decode);
 ///     		return book;
 ///     	}
 ///
 ///     	@Post(path: '/many')
 ///     	@Wrap(const [#decoder, #encoder])
-///     	List<Book> list(Context ctx) => ctx.getInput(json.Decode);
+///     	List<Book> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 ///     }
 class Decode<ModelType> extends Interceptor {
   /// Serializer used to deserialize Dart object from JSON
