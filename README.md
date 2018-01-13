@@ -25,19 +25,19 @@ object can be obtained in the route method using `ctx.getInterceptorResult(Decod
 ```dart
 @Api(path: '/api/book')
 class BookRoutes {
-  json.Decode decoder(_) => new json.Decode(bookSerializer);
+  static json.Decode decoder(_) => new json.Decode(bookSerializer);
 
-  json.Encode<Book> encoder(_) => new json.Encode<Book>(bookSerializer);
+  static json.Encode<Book> encoder(_) => new json.Encode<Book>(bookSerializer);
 
   @Post()
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   Book one(Context ctx) {
     final Book book = ctx.getInterceptorResult(json.Decode);
     return book;
   }
 
   @Post(path: '/many')
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   List<Book> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 }
 ```
@@ -53,16 +53,19 @@ to serialize and deserialize. For the decoder to find the right serializer, the 
 field. The type field can be set in the `DecodeRepo` using `typeKey` argument.
 
 ```dart
+final JsonRepo repo = new JsonRepo(
+    serializers: [personSerializer, bookSerializer], withType: true);
+
+json.CodecRepo codec(_) => new json.CodecRepo(repo);
+
 @Api(path: '/api/book')
 class BookRoutes {
-  json.CodecRepo codec(_) => new json.CodecRepo(repo);
-
   @Get()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Book get(Context ctx) => new Book.fromNum(5);
 
   @Post()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Book post(Context ctx) {
     final book = ctx.getInterceptorResult<Book>(json.CodecRepo);
     return book;

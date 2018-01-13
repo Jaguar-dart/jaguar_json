@@ -1,6 +1,6 @@
 name: jaguar_json
 description: jaguar_serializer based JSON interceptors for Jaguar
-version: 1.2.1
+version: 1.2.2
 authors:
 - Ravi Teja Gudapati <tejainece@gmail.com>
 - Kevin Segaud <segaud.kevin@gmail.com>
