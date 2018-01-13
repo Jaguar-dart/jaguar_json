@@ -9,30 +9,28 @@ import 'package:jaguar_client/jaguar_client.dart';
 
 import '../../example/models/models.dart';
 
+json.EncodeRepo encoder(_) => new json.EncodeRepo(repo);
+
 @Api(path: '/api/book')
 class BookRoutes {
-  json.EncodeRepo encoder(_) => new json.EncodeRepo(repo);
-
   @Get()
-  @WrapOne(#encoder)
+  @WrapOne(encoder)
   Book get(Context ctx) => new Book.fromNum(5);
 
   @Get(path: '/many')
-  @WrapOne(#encoder)
+  @WrapOne(encoder)
   List<Book> getList(Context ctx) =>
       new List<Book>.generate(5, (int i) => new Book.fromNum(i));
 }
 
 @Api(path: '/api/person')
 class PersonRoutes {
-  json.EncodeRepo encoder(_) => new json.EncodeRepo(repo);
-
   @Get()
-  @WrapOne(#encoder)
+  @WrapOne(encoder)
   Person get(Context ctx) => new Person.fromNum(5);
 
   @Get(path: '/many')
-  @WrapOne(#encoder)
+  @WrapOne(encoder)
   List<Person> getList(Context ctx) =>
       new List<Person>.generate(5, (int i) => new Person.fromNum(i));
 }
@@ -75,7 +73,6 @@ main() {
         final books =
             new List<Book>.generate(5, (int i) => new Book.fromNum(i));
         final JsonResponse resp1 = await j.get(url + '/api/book/many');
-        print(resp1.inner.body);
         expect(resp1.deserialize(), books);
         expect(resp1.inner.headers['content-type'],
             'application/json; charset=utf-8');

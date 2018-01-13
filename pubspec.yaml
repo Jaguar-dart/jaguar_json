@@ -1,6 +1,6 @@
 name: jaguar_json
 description: jaguar_serializer based JSON interceptors for Jaguar
-version: 1.1.5
+version: 1.2.1
 authors:
 - Ravi Teja Gudapati <tejainece@gmail.com>
 - Kevin Segaud <segaud.kevin@gmail.com>
@@ -11,8 +11,8 @@ environment:
   sdk: '>=1.20.1 <2.0.0'
 
 dependencies:
-  jaguar: ^1.1.5
-  jaguar_reflect: ^1.1.5
+  jaguar: ^1.2.5
+  jaguar_reflect: ^1.2.1
   jaguar_serializer: ^0.5.1
 
 dev_dependencies:

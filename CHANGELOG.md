@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
++ Jaguar `1.2.x` style interceptors
+
 ## 0.2.0
 
 - Moved to jaguar_serializer 0.5.x

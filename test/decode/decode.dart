@@ -11,34 +11,35 @@ import '../../example/models/models.dart';
 
 @Api(path: '/api/book')
 class BookRoutes {
-  json.Decode decoder(_) => new json.Decode(bookSerializer);
+  static json.Decode decoder(_) => new json.Decode(bookSerializer);
 
-  json.Encode<Book> encoder(_) => new json.Encode<Book>(bookSerializer);
+  static json.Encode<Book> encoder(_) => new json.Encode<Book>(bookSerializer);
 
   @Post()
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   Book one(Context ctx) {
     final Book book = ctx.getInterceptorResult(json.Decode);
     return book;
   }
 
   @Post(path: '/many')
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   List<Book> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 }
 
 @Api(path: '/api/person')
 class PersonRoutes {
-  json.Decode decoder(_) => new json.Decode(personSerializer);
+  static json.Decode decoder(_) => new json.Decode(personSerializer);
 
-  json.Encode<Person> encoder(_) => new json.Encode<Person>(personSerializer);
+  static json.Encode<Person> encoder(_) =>
+      new json.Encode<Person>(personSerializer);
 
   @Post()
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   Person one(Context ctx) => ctx.getInterceptorResult(json.Decode);
 
   @Post(path: '/many')
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   List<Person> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 }
 

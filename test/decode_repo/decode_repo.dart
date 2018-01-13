@@ -13,33 +13,32 @@ import '../../example/models/models.dart';
 final JsonRepo repo = new JsonRepo(
     serializers: [personSerializer, bookSerializer], withType: true);
 
+json.DecodeRepo decoder(_) => new json.DecodeRepo(repo);
+
 @Api(path: '/api/book')
 class BookRoutes {
-  json.DecodeRepo decoder(_) => new json.DecodeRepo(repo);
-
-  json.Encode<Book> encoder(_) => new json.Encode<Book>(bookSerializer);
+  static json.Encode<Book> encoder(_) => new json.Encode<Book>(bookSerializer);
 
   @Post()
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   Book get(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 
   @Post(path: '/many')
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   List<Book> getList(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 }
 
 @Api(path: '/api/person')
 class PersonRoutes {
-  json.DecodeRepo decoder(_) => new json.DecodeRepo(repo);
-
-  json.Encode<Person> encoder(_) => new json.Encode<Person>(personSerializer);
+  static json.Encode<Person> encoder(_) =>
+      new json.Encode<Person>(personSerializer);
 
   @Post()
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   Person get(Context ctx) => ctx.getInterceptorResult(json.DecodeRepo);
 
   @Post(path: '/many')
-  @Wrap(const [#decoder, #encoder])
+  @Wrap(const [decoder, encoder])
   List<Person> getList(Context ctx) =>
       ctx.getInterceptorResult(json.DecodeRepo);
 }

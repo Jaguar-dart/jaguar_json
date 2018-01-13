@@ -11,27 +11,28 @@ import '../../example/models/models.dart';
 
 @Api(path: '/api/book')
 class BookRoutes {
-  json.Codec codec(_) => new json.Codec(bookSerializer, bookSerializer);
+  static json.Codec codec(_) => new json.Codec(bookSerializer, bookSerializer);
 
   @Get()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Book get(Context ctx) => new Book.fromNum(5);
 
   @Post()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Book post(Context ctx) => ctx.getInterceptorResult<Book>(json.Codec);
 }
 
 @Api(path: '/api/person')
 class PersonRoutes {
-  json.Codec codec(_) => new json.Codec(personSerializer, personSerializer);
+  static json.Codec codec(_) =>
+      new json.Codec(personSerializer, personSerializer);
 
   @Get()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Person get(Context ctx) => new Person.fromNum(5);
 
   @Post()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Person post(Context ctx) => ctx.getInterceptorResult<Person>(json.Codec);
 }
 

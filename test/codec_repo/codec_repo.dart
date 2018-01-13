@@ -13,16 +13,16 @@ import '../../example/models/models.dart';
 final JsonRepo repo = new JsonRepo(
     serializers: [personSerializer, bookSerializer], withType: true);
 
+json.CodecRepo codec(_) => new json.CodecRepo(repo);
+
 @Api(path: '/api/book')
 class BookRoutes {
-  json.CodecRepo codec(_) => new json.CodecRepo(repo);
-
   @Get()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Book get(Context ctx) => new Book.fromNum(5);
 
   @Post()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Book post(Context ctx) {
     final book = ctx.getInterceptorResult<Book>(json.CodecRepo);
     return book;
@@ -31,14 +31,12 @@ class BookRoutes {
 
 @Api(path: '/api/person')
 class PersonRoutes {
-  json.CodecRepo codec(_) => new json.CodecRepo(repo);
-
   @Get()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Person get(Context ctx) => new Person.fromNum(5);
 
   @Post()
-  @WrapOne(#codec)
+  @WrapOne(codec)
   Person post(Context ctx) => ctx.getInterceptorResult<Person>(json.CodecRepo);
 }
 
