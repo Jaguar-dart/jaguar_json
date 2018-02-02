@@ -19,22 +19,28 @@ part of jaguar.json;
 ///     		return book;
 ///     	}
 ///     }
-class CodecRepo extends Interceptor {
+class CodecRepo extends FullInterceptor {
   /// Encoding
   final Encoding bodyEncoding;
 
   /// Repository used to decode and encode JSON
   final SerializerRepo repo;
 
-  const CodecRepo(this.repo, {this.bodyEncoding: UTF8});
+  CodecRepo(this.repo, {this.bodyEncoding: UTF8});
 
-  Future<dynamic> pre(Context ctx) async {
+  dynamic output;
+
+  Future before(Context ctx) async {
     final data = await ctx.req.bodyAsText(bodyEncoding);
-    if (data.isNotEmpty) return repo.deserialize(data);
-    return null;
+    if (data.isNotEmpty) {
+      output = repo.deserialize(data);
+      ctx.addInterceptor(CodecRepo, id, this);
+      return;
+    }
+    return;
   }
 
-  Response<String> post(Context ctx, Response incoming) {
+  Response<String> after(Context ctx, Response incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
     resp.value = repo.serialize(incoming.value, withType: true);
     resp.headers.mimeType = ContentType.JSON.mimeType;
@@ -59,15 +65,17 @@ class CodecRepo extends Interceptor {
 ///     	List<Book> getList(Context ctx) =>
 ///     			new List<Book>.generate(5, (int i) => new Book.fromNum(i));
 ///     }
-class EncodeRepo extends Interceptor {
+class EncodeRepo extends FullInterceptor {
   /// Repository used to decode and encode JSON
   final JsonRepo repo;
 
   EncodeRepo(this.repo);
 
-  Null pre(_) => null;
+  Null get output => null;
 
-  Response<String> post(Context ctx, Response<dynamic> incoming) {
+  void before(_) {}
+
+  Response<String> after(Context ctx, Response<dynamic> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
     resp.value = repo.serialize(incoming.value, withType: true);
     resp.headers.mimeType = ContentType.JSON.mimeType;
@@ -101,12 +109,16 @@ class DecodeRepo extends Interceptor {
 
   DecodeRepo(this.repo, {this.encoding: UTF8});
 
-  Future<dynamic> pre(Context ctx) async {
+  dynamic output;
+
+  Future before(Context ctx) async {
     String data = await ctx.req.bodyAsText(encoding);
     if (data.isNotEmpty) {
-      return repo.deserialize(data);
+      output = repo.deserialize(data);
+      ctx.addInterceptor(DecodeRepo, id, this);
+      return;
     }
 
-    return null;
+    return;
   }
 }

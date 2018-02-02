@@ -18,7 +18,7 @@ part of jaguar.json;
 ///     	Book post(Context ctx) => ctx.getInterceptorResult<Book>(json.Codec);
 ///     }
 class Codec<BodyType, RespType>
-    extends Interceptor<BodyType, String, RespType> {
+    extends FullInterceptor<BodyType, String, RespType> {
   /// Serializer used to deserialize Dart object from JSON
   final Serializer<BodyType> bodySerializer;
 
@@ -28,19 +28,22 @@ class Codec<BodyType, RespType>
   /// Encoding
   final Encoding bodyEncoding;
 
-  const Codec(this.bodySerializer, this.respSerializer,
-      {this.bodyEncoding: UTF8});
+  Codec(this.bodySerializer, this.respSerializer, {this.bodyEncoding: UTF8});
 
-  Future<BodyType> pre(Context ctx) async {
+  BodyType output;
+
+  Future before(Context ctx) async {
     String data = await ctx.req.bodyAsText(bodyEncoding);
     if (data.isNotEmpty) {
-      return bodySerializer.fromMap(JSON.decode(data));
+      output = bodySerializer.fromMap(JSON.decode(data));
+      ctx.addInterceptor(Codec, id, this);
+      return;
     }
 
-    return null;
+    return;
   }
 
-  Response<String> post(Context ctx, Response<RespType> incoming) {
+  Response<String> after(Context ctx, Response<RespType> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
     resp.value =
         JSON.encode(respSerializer.toMap(incoming.value, withType: true));
@@ -69,15 +72,17 @@ class Codec<BodyType, RespType>
 ///     	@Wrap(const [#decoder, #encoder])
 ///     	List<Book> list(Context ctx) => ctx.getInterceptorResult(json.Decode);
 ///     }
-class Encode<ModelType> extends Interceptor<Null, String, ModelType> {
+class Encode<ModelType> extends FullInterceptor<Null, String, ModelType> {
   /// Serializer used to serialize Dart object to JSON
   final Serializer<ModelType> serializer;
 
-  const Encode(this.serializer);
+  Encode(this.serializer);
 
-  Null pre(_) => null;
+  Null get output => null;
 
-  Response<String> post(Context ctx, Response<ModelType> incoming) {
+  void before(_) => null;
+
+  Response<String> after(Context ctx, Response<ModelType> incoming) {
     Response<String> resp = new Response<String>.cloneExceptValue(incoming);
     resp.value =
         JSON.encode(serializer.serialize(incoming.value, withType: true));
@@ -114,12 +119,16 @@ class Decode<ModelType> extends Interceptor {
 
   Decode(this.serializer, {this.encoding: UTF8});
 
-  Future<dynamic> pre(Context ctx) async {
+  ModelType output;
+
+  Future before(Context ctx) async {
     String data = await ctx.req.bodyAsText(encoding);
     if (data.isNotEmpty) {
-      return serializer.deserialize(JSON.decode(data));
+      output = serializer.deserialize(JSON.decode(data));
+      ctx.addInterceptor(Decode, id, this);
+      return;
     }
 
-    return null;
+    return;
   }
 }
